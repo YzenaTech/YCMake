@@ -35,7 +35,7 @@ endfunction (create_test)
 function (create_library name src)
 
 	# Do the shared library only on platforms other than Windows.
-	if(NOT WIN32)
+	if (NOT WIN32)
 		set(SHARED_NAME "${name}_shared")
 		add_library("${SHARED_NAME}" SHARED "${src}")
 		set_target_properties("${SHARED_NAME}" PROPERTIES OUTPUT_NAME "${name}")
