@@ -32,7 +32,7 @@ function (create_test target)
 
 endfunction (create_test)
 
-function (create_library name src)
+function (create_library name src doinstall)
 
 	# Do the shared library only on platforms other than Windows.
 	if (NOT WIN32)
@@ -40,7 +40,9 @@ function (create_library name src)
 		add_library("${SHARED_NAME}" SHARED "${src}")
 		set_target_properties("${SHARED_NAME}" PROPERTIES OUTPUT_NAME "${name}")
 		target_link_libraries("${SHARED_NAME}" "${ARGN}")
-		install(TARGETS "${SHARED_NAME}" LIBRARY DESTINATION lib/${name})
+		if (doinstall)
+			install(TARGETS "${SHARED_NAME}" LIBRARY DESTINATION lib/)
+		endif()
 	endif()
 
 	# Static library.
@@ -48,6 +50,8 @@ function (create_library name src)
 	add_library("${STATIC_NAME}" STATIC "${src}")
 	set_target_properties("${STATIC_NAME}" PROPERTIES OUTPUT_NAME "${name}")
 	target_link_libraries("${STATIC_NAME}" "${ARGN}")
-	install(TARGETS "${STATIC_NAME}" ARCHIVE DESTINATION lib/${name})
+	if (doinstall)
+		install(TARGETS "${STATIC_NAME}" ARCHIVE DESTINATION lib/)
+	endif()
 
 endfunction (create_library)
