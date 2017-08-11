@@ -25,4 +25,3 @@
 #	****** END LICENSE BLOCK ******
 
 include("functions.cmake")
-include("macros.cmake")
