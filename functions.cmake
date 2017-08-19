@@ -34,11 +34,21 @@ endfunction (create_test)
 
 function (create_library name src doinstall)
 
-	# Static library only.
-	add_library("${name}" STATIC "${src}")
+	set(STATIC_NAME "${name}_static")
+
+	# Static library only for Windows.
+	add_library("${STATIC_NAME}" STATIC "${src}")
+	set_target_properties("${STATIC_NAME}" PROPERTIES OUTPUT_NAME "${name}")
 	target_link_libraries("${name}" "${ARGN}")
 	if (doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
-	endif()
+	if (NOT WIN32)
+
+		add_library("${name}" SHARED "${src}")
+		target_link_libraries("${name}" "${ARGN}")
+		if (doinstall)
+			install(TARGETS "${name}" LIBRARY DESTINATION lib/)
+		endif()
+	endif(WIN32)
 
 endfunction (create_library)
