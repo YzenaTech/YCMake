@@ -50,7 +50,8 @@ function (create_library name src doinstall)
 		target_link_libraries("${name}" "${ARGN}")
 		if (doinstall)
 			install(TARGETS "${name}" LIBRARY DESTINATION lib/)
-		endif()
-	endif(WIN32)
+		endif(doinstall)
+
+	endif(NOT WIN32)
 
 endfunction (create_library)
