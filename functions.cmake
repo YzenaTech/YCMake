@@ -39,9 +39,9 @@ function (create_library name src doinstall)
 	# Static library only for Windows.
 	add_library("${STATIC_NAME}" STATIC "${src}")
 	set_target_properties("${STATIC_NAME}" PROPERTIES OUTPUT_NAME "${name}")
-	target_link_libraries("${name}" "${ARGN}")
+	target_link_libraries("${STATIC_NAME}" "${ARGN}")
 	if (doinstall)
-		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
+		install(TARGETS "${STATIC_NAME}" ARCHIVE DESTINATION lib/)
 	endif(doinstall)
 
 	if (NOT WIN32)
