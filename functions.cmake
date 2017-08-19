@@ -42,6 +42,8 @@ function (create_library name src doinstall)
 	target_link_libraries("${name}" "${ARGN}")
 	if (doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
+	endif(doinstall)
+
 	if (NOT WIN32)
 
 		add_library("${name}" SHARED "${src}")
