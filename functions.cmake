@@ -71,3 +71,11 @@ function (create_shared_library name output_name src doinstall)
 	endif(doinstall)
 
 endfunction (create_shared_library)
+
+function (create_all_libraries name src doinstall)
+
+	create_static_library("${name}" "${name}" "${src}" "${doinstall}" "${ARGN}")
+	create_pic_library("${name}" "${name}_pic" "${src}" "${doinstall}" "${ARGN}")
+	create_shared_library("${name}" "${name}" "${src}" "${doinstall}" "${ARGN}")
+
+endfunction (create_all_libraries)
