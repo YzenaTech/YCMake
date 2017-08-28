@@ -32,26 +32,42 @@ function (create_test target)
 
 endfunction (create_test)
 
-function (create_library name src doinstall)
+function (create_static_library name output_name src doinstall)
 
-	# Static library only for Windows.
 	add_library("${name}" STATIC "${src}")
 	target_link_libraries("${name}" "${ARGN}")
+
+	set_target_properties("${name}" PROPERTIES OUTPUT_NAME "${output_name}")
+
 	if (doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
 	endif(doinstall)
 
-	if (NOT WIN32)
+endfunction (create_static_library)
 
-		set(SHARED_NAME "${name}_shared")
+function (create_pic_library name output_name src doinstall)
 
-		add_library("${SHARED_NAME}" SHARED "${src}")
-		set_target_properties("${SHARED_NAME}" PROPERTIES OUTPUT_NAME "${name}")
-		target_link_libraries("${SHARED_NAME}" "${ARGN}")
-		if (doinstall)
-			install(TARGETS "${SHARED_NAME}" LIBRARY DESTINATION lib/)
-		endif(doinstall)
+	add_library("${name}" STATIC "${src}")
+	target_link_libraries("${name}" "${ARGN}")
 
-	endif(NOT WIN32)
+	set_target_properties("${name}" PROPERTIES OUTPUT_NAME "${output_name}")
+	set_property(TARGET "${name}" PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-endfunction (create_library)
+	if (doinstall)
+		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
+	endif(doinstall)
+
+endfunction (create_pic_library)
+
+function (create_shared_library name output_name src doinstall)
+
+	add_library("${name}" SHARED "${src}")
+	target_link_libraries("${name}" "${ARGN}")
+
+	set_target_properties("${name}" PROPERTIES OUTPUT_NAME "${output_name}")
+
+	if (doinstall)
+		install(TARGETS "${name}" LIBRARY DESTINATION lib/)
+	endif(doinstall)
+
+endfunction (create_shared_library)
