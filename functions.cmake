@@ -32,6 +32,19 @@ function (create_test target)
 
 endfunction (create_test)
 
+function (create_shared_library name output_name src doinstall)
+
+	add_library("${name}" SHARED "${src}")
+	target_link_libraries("${name}" "${ARGN}")
+
+	set_target_properties("${name}" PROPERTIES OUTPUT_NAME "${output_name}")
+
+	if (doinstall)
+		install(TARGETS "${name}" LIBRARY DESTINATION lib/)
+	endif(doinstall)
+
+endfunction (create_shared_library)
+
 function (create_static_library name output_name src doinstall)
 
 	add_library("${name}" STATIC "${src}")
@@ -59,23 +72,10 @@ function (create_pic_library name output_name src doinstall)
 
 endfunction (create_pic_library)
 
-function (create_shared_library name output_name src doinstall)
+function (create_all_libraries shared_name static_name pic_name output_name src doinstall)
 
-	add_library("${name}" SHARED "${src}")
-	target_link_libraries("${name}" "${ARGN}")
-
-	set_target_properties("${name}" PROPERTIES OUTPUT_NAME "${output_name}")
-
-	if (doinstall)
-		install(TARGETS "${name}" LIBRARY DESTINATION lib/)
-	endif(doinstall)
-
-endfunction (create_shared_library)
-
-function (create_all_libraries name src doinstall)
-
-	create_static_library("${name}" "${name}" "${src}" "${doinstall}" "${ARGN}")
-	create_pic_library("${name}" "${name}_pic" "${src}" "${doinstall}" "${ARGN}")
-	create_shared_library("${name}" "${name}" "${src}" "${doinstall}" "${ARGN}")
+	create_shared_library("${shared_name}" "${output_name}" "${src}" "${doinstall}" "${ARGN}")
+	create_static_library("${static_name}" "${output_name}" "${src}" "${doinstall}" "${ARGN}")
+	create_pic_library("${pic_name}" "${output_name}_pic" "${src}" "${doinstall}" "${ARGN}")
 
 endfunction (create_all_libraries)
