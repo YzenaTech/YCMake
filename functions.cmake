@@ -107,18 +107,15 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		set(outfile "$<TARGET_FILE:${outlib}>")
 		add_custom_command(TARGET ${outlib} POST_BUILD
-			COMMAND rm ${outfile}
-			COMMAND /usr/bin/libtool -static -o ${outfile}
+			COMMAND rm $<TARGET_FILE:${outlib}>
+			COMMAND /usr/bin/libtool -static -o $<TARGET_FILE:${outlib}>
 			${libfiles})
 	else()
 		# general UNIX - need to "ar -x" and then "ar -ru"
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		set(outfile "$<TARGET_FILE:${outlib}>")
-		message(STATUS "Outfile location is ${outfile}")
 		foreach(lib ${libfiles})
 			# objlistfile will contain the list of object files for the library
 			set(objlistfile ${lib}.objlist)
@@ -139,14 +136,14 @@ function(merge_static_libs outlib )
 			# relative path is needed by ar under MSYS
 			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
 			add_custom_command(TARGET ${outlib} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
-				COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
+				COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru $<TARGET_FILE:${outlib}> @${objlistfilerpath}"
+				COMMAND ${CMAKE_AR} ru "$<TARGET_FILE:${outlib}>" @"${objlistfilerpath}"
 				WORKING_DIRECTORY ${objdir})
 		endforeach()
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_RANLIB} ${outfile}"
-			COMMAND ${CMAKE_RANLIB} ${outfile})
+			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_RANLIB} $<TARGET_FILE:${outlib}>"
+			COMMAND ${CMAKE_RANLIB} $<TARGET_FILE:${outlib}>)
 	endif()
 	file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
 	add_custom_command(
