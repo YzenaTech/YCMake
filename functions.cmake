@@ -107,7 +107,7 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		set(outfile $<TARGET_FILE:${outlib}>)
+		set(outfile "$<TARGET_FILE:${outlib}>")
 		add_custom_command(TARGET ${outlib} POST_BUILD
 			COMMAND rm ${outfile}
 			COMMAND /usr/bin/libtool -static -o ${outfile}
@@ -117,7 +117,7 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		set(outfile $<TARGET_FILE:${outlib}>)
+		set(outfile "$<TARGET_FILE:${outlib}>")
 		message(STATUS "Outfile location is ${outfile}")
 		foreach(lib ${libfiles})
 			# objlistfile will contain the list of object files for the library
@@ -161,7 +161,7 @@ function(create_test target)
 
 	add_executable("${target}" "${target}.c")
 	target_link_libraries("${target}" "${ARGN}")
-	add_test(NAME ${target} COMMAND $<TARGET_FILE:${target}>)
+	add_test(NAME ${target} COMMAND "$<TARGET_FILE:${target}>")
 
 endfunction(create_test)
 
