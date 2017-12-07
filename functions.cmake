@@ -76,7 +76,7 @@ function(merge_static_libs outlib )
 			list(APPEND libfiles "${libfile}")
 		endif(multiconfig)
 	endforeach()
-	message(STATUS "will be merging ${libfiles}")
+	message(STATUS "Will be merging ${libfiles}")
 
 	# Just to be sure: cleanup from duplicates
 	if(multiconfig)
@@ -115,7 +115,7 @@ function(merge_static_libs outlib )
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
 		get_target_property(outfile ${outlib} LOCATION)
-		message(STATUS "outfile location is ${outfile}")
+		message(STATUS "Outfile location is ${outfile}")
 		foreach(lib ${libfiles})
 			# objlistfile will contain the list of object files for the library
 			set(objlistfile ${lib}.objlist)
@@ -218,3 +218,4 @@ function(create_all_libraries shared_name static_name pic_name output_name src d
 	create_pic_library("${pic_name}" "${output_name}_pic" "${src}" "${doinstall}" "${ARGN}")
 
 endfunction(create_all_libraries)
+
