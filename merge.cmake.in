@@ -24,4 +24,16 @@
 #
 #	****** END LICENSE BLOCK ******
 
-include("libutils.cmake")
+set(LIB @lib@)
+set(OBJDIR @objdir@)
+set(OBJLISTFILE @objlistfile@)
+
+# Extract object files from the library
+message(STATUS "Extracting object files from ${LIB}")
+execute_process(COMMAND ${CMAKE_AR} -x ${LIB}
+	WORKING_DIRECTORY ${OBJDIR})
+
+# Save the list of object files.
+execute_process(COMMAND ls .
+	OUTPUT_FILE ${OBJLISTFILE}
+	WORKING_DIRECTORY ${OBJDIR})
