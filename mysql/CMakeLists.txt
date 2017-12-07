@@ -24,6 +24,3 @@
 #
 #	****** END LICENSE BLOCK ******
 
-add_subdirectory("mysql")
-
-include("functions.cmake")
