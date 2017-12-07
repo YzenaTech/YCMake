@@ -120,11 +120,11 @@ function(merge_static_libs outlib )
 			# objlistfile will contain the list of object files for the library
 			set(objlistfile ${lib}.objlist)
 			set(objdir ${lib}.objdir)
-			set(objlistcmake  ${objlistfile}.cmake)
+			set(objlistcmake  "${CMAKE_CURRENT_BINARY_DIR}/merge_${objlistfile}.cmake")
 			# we only need to extract files once
 			if(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cmake.check_cache IS_NEWER_THAN ${objlistcmake})
 				#---------------------------------
-				configure_file("${SCRIPT_DIR}/merge.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/merge_${objlistfile}.cmake" @ONLY)
+				configure_file("${SCRIPT_DIR}/merge.cmake.in" "${objlistcmake}" @ONLY)
 				#---------------------------------
 				file(MAKE_DIRECTORY ${objdir})
 				add_custom_command(
