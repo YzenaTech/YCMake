@@ -75,7 +75,7 @@ function(merge_static_libs outlib )
 				list(APPEND libfiles_${CONFIG_TYPE} ${libfile_${CONFIG_TYPE}})
 			endforeach()
 		else()
-			get_target_property(libfile ${lib} LOCATION)
+			set(libfile "$<TARGET_FILE:${lib}>")
 			list(APPEND libfiles "${libfile}")
 		endif(multiconfig)
 	endforeach()
@@ -107,7 +107,7 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		get_target_property(outfile ${outlib} LOCATION)
+		set(outfile $<TARGET_FILE:${outlib}>)
 		add_custom_command(TARGET ${outlib} POST_BUILD
 			COMMAND rm ${outfile}
 			COMMAND /usr/bin/libtool -static -o ${outfile}
@@ -117,7 +117,7 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		get_target_property(outfile ${outlib} LOCATION)
+		set(outfile $<TARGET_FILE:${outlib}>)
 		message(STATUS "Outfile location is ${outfile}")
 		foreach(lib ${libfiles})
 			# objlistfile will contain the list of object files for the library
@@ -172,7 +172,6 @@ function(create_shared_library name output_name src doinstall)
 
 	set_target_properties("${name}"
 		PROPERTIES
-		LOCATION "${CMAKE_CURRENT_BINARY_DIR}"
 		OUTPUT_NAME "${output_name}")
 
 	if(doinstall)
@@ -188,7 +187,6 @@ function(create_static_library name output_name src doinstall)
 
 	set_target_properties("${name}"
 		PROPERTIES
-		LOCATION "${CMAKE_CURRENT_BINARY_DIR}"
 		OUTPUT_NAME "${output_name}")
 
 	if(doinstall)
@@ -204,7 +202,6 @@ function(create_pic_library name output_name src doinstall)
 
 	set_target_properties("${name}"
 		PROPERTIES
-		LOCATION "${CMAKE_CURRENT_BINARY_DIR}"
 		OUTPUT_NAME "${output_name}"
 		POSITION_INDEPENDENT_CODE ON)
 
