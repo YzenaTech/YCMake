@@ -41,6 +41,9 @@
 # Make sure we save this.
 set(SCRIPT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Directory of the merge script")
 
+# For some reason, we get stupid CMake warnings.
+cmake_policy(SET CMP0026 OLD
+
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
 function(merge_static_libs outlib )
