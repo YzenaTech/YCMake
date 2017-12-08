@@ -65,13 +65,11 @@ function(merge_lib name output)
 	# Set the target name.
 	list(APPEND STATIC_LIBS_NAMES "${name}")
 	set(STATIC_LIBS_NAMES "${STATIC_LIBS_NAMES}" CACHE INTERNAL "List of library target names")
-	message(STATUS "Names: ${STATIC_LIBS_NAMES}")
 
 	# Get the path.
 	static_lib_path(LIB_PATH "${output}")
 	list(APPEND STATIC_LIBS_LIST "${LIB_PATH}")
 	set(STATIC_LIBS_LIST "${STATIC_LIBS_LIST}" CACHE INTERNAL "List of libraries to merge")
-	message(STATUS "List: ${STATIC_LIBS_LIST}")
 
 endfunction(merge_lib)
 
@@ -91,7 +89,6 @@ function(merge_static_libs outlib)
 
 	# Make sure all libs are static.
 	foreach(lib ${STATIC_LIBS_NAMES})
-		message(STATUS "Lib: ${lib}")
 		get_target_property(libtype ${lib} TYPE)
 		if(NOT libtype STREQUAL "STATIC_LIBRARY")
 			message(FATAL_ERROR "Merge_static_libs can only process static libraries")
@@ -120,8 +117,6 @@ function(merge_static_libs outlib)
 	# Just to be sure: cleanup from duplicates
 	list(REMOVE_DUPLICATES STATIC_LIBS_LIST)
 	set(STATIC_LIBS_LIST "${STATIC_LIBS_LIST}" CACHE INTERNAL "List of libraries to merge")
-
-	message(STATUS "Will be merging ${STATIC_LIBS_LIST}")
 
 	# Now the easy part for MSVC and for MAC
 	if(MSVC)
