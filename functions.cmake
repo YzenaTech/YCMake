@@ -40,7 +40,8 @@
 
 # Make sure we save this.
 set(SCRIPT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Directory of the merge script")
-set(MERGE_LIBS "${MERGE_LIBS}" CACHE INTERNAL STRING "List of libraries to merge")
+set(STATIC_LIBS_LIST "${STATIC_LIBS_LIST}" CACHE INTERNAL "List of libraries to merge")
+set(STATIC_LIBS_NAMES "${STATIC_LIBS_NAMES}" CACHE INTERNAL "List of library target names")
 
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
@@ -61,10 +62,16 @@ endfunction(static_lib_path)
 
 function(merge_lib name output)
 
+	# Set the target name.
+	list(APPEND STATIC_LIBS_NAMES "${output}")
+	set(STATIC_LIBS_NAMES "${STATIC_LIBS_NAMES}" CACHE INTERNAL "List of library target names")
+	message(STATUS "Names: ${STATIC_LIBS_NAMES}")
+
+	# Get the path.
 	static_lib_path(LIB_PATH "${output}")
-	list(APPEND MERGE_LIBS "${LIB_PATH}")
-	set(MERGE_LIBS "${MERGE_LIBS}" CACHE INTERNAL "List of libraries to merge")
-	message(STATUS "List: ${MERGE_LIBS}")
+	list(APPEND STATIC_LIBS_LIST "${LIB_PATH}")
+	set(STATIC_LIBS_LIST "${STATIC_LIBS_LIST}" CACHE INTERNAL "List of libraries to merge")
+	message(STATUS "List: ${STATIC_LIBS_LIST}")
 
 endfunction(merge_lib)
 
@@ -83,7 +90,8 @@ function(merge_static_libs outlib)
 	static_lib_path(outfile "${outlib}")
 
 	# Make sure all libs are static.
-	foreach(lib ${MERGE_LIBS})
+	foreach(lib ${STATIC_LIBS_LIST})
+		message(STATUS "Lib: ${lib}")
 		get_target_property(libtype ${lib} TYPE)
 		if(NOT libtype STREQUAL "STATIC_LIBRARY")
 			message(FATAL_ERROR "Merge_static_libs can only process static libraries")
@@ -94,7 +102,7 @@ function(merge_static_libs outlib)
 	if(NOT"${CMAKE_CFG_INTDIR}" STREQUAL ".")
 
 		# Generate a list for each config type.
-		foreach(lib ${MERGE_LIBS})
+		foreach(lib ${STATIC_LIBS_LIST})
 			foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
 				get_target_property("libfile_${CONFIG_TYPE}" ${lib} "LOCATION_${CONFIG_TYPE}")
 				list(APPEND libfiles_${CONFIG_TYPE} ${libfile_${CONFIG_TYPE}})
@@ -110,10 +118,10 @@ function(merge_static_libs outlib)
 	endif()
 
 	# Just to be sure: cleanup from duplicates
-	list(REMOVE_DUPLICATES MERGE_LIBS)
-	set(MERGE_LIBS "${MERGE_LIBS}" CACHE INTERNAL "List of libraries to merge")
+	list(REMOVE_DUPLICATES STATIC_LIBS_LIST)
+	set(STATIC_LIBS_LIST "${STATIC_LIBS_LIST}" CACHE INTERNAL "List of libraries to merge")
 
-	message(STATUS "Will be merging ${MERGE_LIBS}")
+	message(STATUS "Will be merging ${STATIC_LIBS_LIST}")
 
 	# Now the easy part for MSVC and for MAC
 	if(MSVC)
@@ -139,7 +147,7 @@ function(merge_static_libs outlib)
 		get_target_property(outfile ${outlib} LOCATION)
 		add_custom_command(TARGET ${outlib} POST_BUILD
 			COMMAND rm ${outfile}
-			COMMAND /usr/bin/libtool -static -o ${outfile} ${MERGE_LIBS})
+			COMMAND /usr/bin/libtool -static -o ${outfile} ${STATIC_LIBS_LIST})
 
 	else()
 
@@ -151,7 +159,7 @@ function(merge_static_libs outlib)
 		endif()
 
 		# Loop over the files.
-		foreach(lib ${MERGE_LIBS})
+		foreach(lib ${STATIC_LIBS_LIST})
 
 			# objlistfile will contain the list of object files for the library.
 			set(objlistfile ${lib}.objlist)
