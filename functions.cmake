@@ -45,6 +45,20 @@ set(MERGE_LIBS "" CACHE STRING "List of libraries to merge")
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
 
+function(static_lib_path var lib_output_name)
+
+	# Build the path.
+	string(CONCAT LIB_PATH
+		"${CMAKE_CURRENT_BINARY_DIR}/"
+		"${CMAKE_STATIC_LIBRARY_PREFIX}"
+		"${lib_output_name}"
+		"${CMAKE_STATIC_LIBRARY_SUFFIX}")
+
+	# Set the variable in parent scope.
+	set("${var} "${LIB_PATH}" PARENT_SCOPE)
+
+endfunction(static_lib_path)
+
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
 function(merge_static_libs outlib)
@@ -57,9 +71,7 @@ function(merge_static_libs outlib)
 	file(WRITE ${dummyfile} "// ${dummyfile}")
 
 	add_library(${outlib} STATIC ${dummyfile})
-	get_target_property(target_prefix "${outlib}" PREFIX)
-	get_target_property(target_suffix "${outlib}" SUFFIX)
-	set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target_prefix}${outlib}${target_suffix}")
+	static_lib_path(outfile "${outlib}")
 
 	# Make sure all libs are static.
 	foreach(lib ${MERGE_LIBS})
@@ -177,14 +189,12 @@ function(merge_static_libs outlib)
 		COMMAND ${CMAKE_COMMAND}  -E copy ${dummyfile}.base ${dummyfile}
 		DEPENDS ${libs} ${extrafiles})
 
- endfunction()
+endfunction()
 
 function(merge_lib name output)
 
-	get_target_property(target_prefix "${name}" PREFIX)
-	get_target_property(target_suffix "${name}" SUFFIX)
-	list(APPEND MERGE_LIBS
-		"${CMAKE_CURRENT_BINARY_DIR}/${target_prefix}${output}${target_suffix}")
+	static_lib_path(LIB_PATH "${output}")
+	list(APPEND MERGE_LIBS "${LIB_PATH}")
 
 endfunction(merge_lib)
 
