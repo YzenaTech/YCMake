@@ -182,6 +182,9 @@ function(merge_static_libs outlib)
 			# Relative path is needed by ar under MSYS.
 			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
 
+			message(STATUS "Absolute: ${objlistfile}")
+			message(STATUS "Relative: ${objlistfilerpath}")
+
 			add_custom_command(TARGET ${outlib}
 				POST_BUILD
 				COMMAND ${CMAKE_AR} r "${outfile}" @"${objlistfilerpath}"
