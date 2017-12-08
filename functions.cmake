@@ -181,7 +181,7 @@ function(merge_static_libs outlib)
 					"# Extract object files from the library
 					message(STATUS \"Extracting object files from ${lib}\")
 					execute_process(COMMAND ${CMAKE_AR} -x ${lib}
-						WORKING_DIRECTORY "${objdir})
+						WORKING_DIRECTORY ${objdir})
 					# save the list of object files
 					execute_process(COMMAND find ${objdir} -type f
 						OUTPUT_FILE ${objlistfile}
