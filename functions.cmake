@@ -55,7 +55,7 @@ function(static_lib_path var lib_output_name)
 		"${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
 	# Set the variable in parent scope.
-	set("${var} "${LIB_PATH}" PARENT_SCOPE)
+	set("${var}" "${LIB_PATH}" PARENT_SCOPE)
 
 endfunction(static_lib_path)
 
