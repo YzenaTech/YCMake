@@ -191,16 +191,10 @@ function(merge_static_libs outlib)
 
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
-			COMMAND ${CMAKE_RANLIB} ${outfile})
+			COMMAND ${CMAKE_AR} t "${outfile}" @"${objlistfilerpath}"
+			COMMAND ${CMAKE_RANLIB} "${outfile}" @"${objlistfilerpath}")
 
 	endif()
-
-	file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
-
-	add_custom_command(
-		OUTPUT  ${dummyfile}
-		COMMAND ${CMAKE_COMMAND}  -E copy ${dummyfile}.base ${dummyfile}
-		DEPENDS ${libs} ${extrafiles})
 
 endfunction()
 
