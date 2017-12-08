@@ -176,7 +176,7 @@ function(merge_static_libs outlib)
 			# relative path is needed by ar under MSYS
 			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
 			add_custom_command(TARGET ${outlib} POST_BUILD
-				COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
+				COMMAND ${CMAKE_AR} r "${outfile}" @"${objlistfilerpath}"
 				WORKING_DIRECTORY ${objdir})
 		endforeach()
 		add_custom_command(TARGET ${outlib}
