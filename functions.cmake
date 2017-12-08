@@ -209,7 +209,6 @@ function(merge_static_libs outlib)
 
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
-			COMMAND ${CMAKE_AR} t "${outfile}"
 			COMMAND ${CMAKE_RANLIB} "${outfile}")
 
 	endif()
