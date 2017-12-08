@@ -63,6 +63,7 @@ function(merge_lib name output)
 
 	static_lib_path(LIB_PATH "${output}")
 	list(APPEND MERGE_LIBS "${LIB_PATH}")
+	set(MERGE_LIBS "${MERGE_LIBS} CACHE INTERNAL)
 	message(STATUS "List: ${MERGE_LIBS}")
 
 endfunction(merge_lib)
@@ -110,6 +111,7 @@ function(merge_static_libs outlib)
 
 	# Just to be sure: cleanup from duplicates
 	list(REMOVE_DUPLICATES MERGE_LIBS)
+	set(MERGE_LIBS "${MERGE_LIBS}" CACHE INTERNAL)
 
 	message(STATUS "Will be merging ${MERGE_LIBS}")
 
