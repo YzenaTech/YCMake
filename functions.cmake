@@ -135,7 +135,7 @@ function(merge_static_libs outlib)
 					execute_process(COMMAND ls .
 						OUTPUT_FILE ${objlistfile}
 						WORKING_DIRECTORY ${objdir})")
-				FILE(WRITE ${objlistcmake} "${file_content})
+				FILE(WRITE ${objlistcmake} "${file_content}")
 				#---------------------------------
 				file(MAKE_DIRECTORY ${objdir})
 				add_custom_command(
