@@ -169,7 +169,7 @@ function(merge_static_libs outlib)
 		endforeach()
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_RANLIB} ${outfile}"
+			COMMAND ${CMAKE_COMMAND} -E echo Running: ${CMAKE_RANLIB} ${outfile}
 			COMMAND ${CMAKE_RANLIB} ${outfile})
 	endif()
 	file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
