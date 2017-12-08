@@ -104,9 +104,9 @@ function(merge_static_libs outlib)
 	set(libfiles "${MERGE_LIBS}")
 
 	# Just to be sure: cleanup from duplicates
-	list(REMOVE_DUPLICATES libfiles)
+	list(REMOVE_DUPLICATES MERGE_LIBS)
 
-	message(STATUS "will be merging ${libfiles}")
+	message(STATUS "Will be merging ${MERGE_LIBS}")
 
 	# Now the easy part for MSVC and for MAC
 	if(MSVC)
@@ -132,7 +132,7 @@ function(merge_static_libs outlib)
 		get_target_property(outfile ${outlib} LOCATION)
 		add_custom_command(TARGET ${outlib} POST_BUILD
 			COMMAND rm ${outfile}
-			COMMAND /usr/bin/libtool -static -o ${outfile} ${libfiles})
+			COMMAND /usr/bin/libtool -static -o ${outfile} ${MERGE_LIBS})
 
 	else()
 
@@ -144,7 +144,7 @@ function(merge_static_libs outlib)
 		endif()
 
 		# Loop over the files.
-		foreach(lib ${libfiles})
+		foreach(lib ${MERGE_LIBS})
 
 			# objlistfile will contain the list of object files for the library.
 			set(objlistfile ${lib}.objlist)
