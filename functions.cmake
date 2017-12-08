@@ -46,7 +46,7 @@ cmake_policy(SET CMP0026 NEW)
 
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
-function(merge_static_libs outlib )
+function(merge_static_libs outlib)
 
 	set(libs ${ARGV})
 	list(REMOVE_AT libs 0)
@@ -79,7 +79,7 @@ function(merge_static_libs outlib )
 			list(APPEND libfiles "${libfile}")
 		endif(multiconfig)
 	endforeach()
-	message(STATUS "Will be merging ${libfiles}")
+	message(STATUS "will be merging ${libfiles}")
 
 	# Just to be sure: cleanup from duplicates
 	if(multiconfig)
@@ -107,6 +107,7 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
+		get_target_property(outfile ${outlib} LOCATION)
 		add_custom_command(TARGET ${outlib} POST_BUILD
 			COMMAND rm $<TARGET_FILE:${outlib}>
 			COMMAND /usr/bin/libtool -static -o $<TARGET_FILE:${outlib}>
@@ -116,15 +117,25 @@ function(merge_static_libs outlib )
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
+		set(outfile $<TARGET_FILE:${outlib}>)
 		foreach(lib ${libfiles})
 			# objlistfile will contain the list of object files for the library
 			set(objlistfile ${lib}.objlist)
 			set(objdir ${lib}.objdir)
-			set(objlistcmake  "${CMAKE_CURRENT_BINARY_DIR}/merge_${objlistfile}.cmake")
+			set(objlistcmake  ${objlistfile}.cmake)
 			# we only need to extract files once
 			if(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cmake.check_cache IS_NEWER_THAN ${objlistcmake})
 				#---------------------------------
-				configure_file("${SCRIPT_DIR}/merge.cmake.in" "${objlistcmake}" @ONLY)
+				string(CONCAT file_content
+					"# Extract object files from the library
+					message(STATUS \"Extracting object files from ${lib}\")
+					execute_process(COMMAND ${CMAKE_AR} -x ${lib}
+						WORKING_DIRECTORY ${objdir})
+					# save the list of object files
+					execute_process(COMMAND ls .
+						OUTPUT_FILE ${objlistfile}
+						WORKING_DIRECTORY ${objdir})")
+				FILE(WRITE ${objlistcmake} "${file_content})
 				#---------------------------------
 				file(MAKE_DIRECTORY ${objdir})
 				add_custom_command(
