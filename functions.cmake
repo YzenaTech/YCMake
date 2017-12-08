@@ -90,7 +90,7 @@ function(merge_static_libs outlib)
 	static_lib_path(outfile "${outlib}")
 
 	# Make sure all libs are static.
-	foreach(lib ${STATIC_LIBS_LIST})
+	foreach(lib ${STATIC_LIBS_NAMES})
 		message(STATUS "Lib: ${lib}")
 		get_target_property(libtype ${lib} TYPE)
 		if(NOT libtype STREQUAL "STATIC_LIBRARY")
