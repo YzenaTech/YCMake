@@ -202,7 +202,7 @@ function(merge_static_libs outlib)
 
 			add_custom_command(TARGET ${outlib}
 				POST_BUILD
-				COMMAND ${CMAKE_AR} r "${outfile}" @"${objlistfilerpath}"
+				COMMAND ${CMAKE_AR} r "${outfile}" "${objlistfilerpath}"
 				WORKING_DIRECTORY ${objdir})
 
 		endforeach()
@@ -258,7 +258,7 @@ function(create_static_library name output_name src doinstall domerge)
 
 endfunction(create_static_library)
 
-function(create_pic_library name output_name src doinstall)
+function(create_pic_library name output_name src doinstall domerge)
 
 	add_library("${name}" STATIC "${src}")
 	target_link_libraries("${name}" "${ARGN}")
