@@ -40,6 +40,7 @@
 
 # Make sure we save this.
 set(SCRIPT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Directory of the merge script")
+set(MERGE_LIBS "" CACHE STRING "List of libraries to merge")
 
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
@@ -56,39 +57,44 @@ function(merge_static_libs outlib)
 	file(WRITE ${dummyfile} "// ${dummyfile}")
 
 	add_library(${outlib} STATIC ${dummyfile})
+	get_target_property(target_prefix "${outlib}" PREFIX)
+	get_target_property(target_suffix "${outlib}" SUFFIX)
+	set(outfile "${CMAKE_CURRENT_BINARY_DIR}/${target_prefix}${outlib}${target_suffix}")
 
-	if("${CMAKE_CFG_INTDIR}" STREQUAL ".")
-		set(multiconfig FALSE)
-	else()
-		set(multiconfig TRUE)
-	endif()
-
-	# First get the file names of the libraries to be merged
-	foreach(lib ${libs})
+	# Make sure all libs are static.
+	foreach(lib ${MERGE_LIBS})
 		get_target_property(libtype ${lib} TYPE)
 		if(NOT libtype STREQUAL "STATIC_LIBRARY")
 			message(FATAL_ERROR "Merge_static_libs can only process static libraries")
 		endif()
-		if(multiconfig)
+	endforeach()
+
+	# If we are on a multiconfig build system...
+	if(NOT"${CMAKE_CFG_INTDIR}" STREQUAL ".")
+
+		# Generate a list for each config type.
+		foreach(lib ${MERGE_LIBS})
 			foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
 				get_target_property("libfile_${CONFIG_TYPE}" ${lib} "LOCATION_${CONFIG_TYPE}")
 				list(APPEND libfiles_${CONFIG_TYPE} ${libfile_${CONFIG_TYPE}})
 			endforeach()
-		else()
-			set(libfile "$<TARGET_FILE:${lib}>")
-			list(APPEND libfiles "${libfile}")
-		endif(multiconfig)
-	endforeach()
-	message(STATUS "will be merging ${libfiles}")
+		endforeach()
 
-	# Just to be sure: cleanup from duplicates
-	if(multiconfig)
+		#  Dedup the lists.
 		foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
 			list(REMOVE_DUPLICATES libfiles_${CONFIG_TYPE})
 			set(libfiles ${libfiles} ${libfiles_${CONFIG_TYPE}})
 		endforeach()
+
 	endif()
+
+	# Rename.
+	set(libfiles "${MERGE_LIBS}")
+
+	# Just to be sure: cleanup from duplicates
 	list(REMOVE_DUPLICATES libfiles)
+
+	message(STATUS "will be merging ${libfiles}")
 
 	# Now the easy part for MSVC and for MAC
 	if(MSVC)
@@ -103,26 +109,35 @@ function(merge_static_libs outlib)
 		endforeach()
 
 	elseif(APPLE)
-		# Use OSX's libtool to merge archives
+
+		# Use OSX's libtool to merge archives.
+
+		# We can't handle multiconfigs.
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
+
 		get_target_property(outfile ${outlib} LOCATION)
 		add_custom_command(TARGET ${outlib} POST_BUILD
-			COMMAND rm $<TARGET_FILE:${outlib}>
-			COMMAND /usr/bin/libtool -static -o $<TARGET_FILE:${outlib}>
-			${libfiles})
+			COMMAND rm ${outfile}
+			COMMAND /usr/bin/libtool -static -o ${outfile} ${libfiles})
+
 	else()
 		# general UNIX - need to "ar -x" and then "ar -ru"
+
+		# We can't handle multiconfigs.
 		if(multiconfig)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
-		set(outfile $<TARGET_FILE:${outlib}>)
+
+		# Loop over the files.
 		foreach(lib ${libfiles})
-			# objlistfile will contain the list of object files for the library
+
+			# objlistfile will contain the list of object files for the library.
 			set(objlistfile ${lib}.objlist)
 			set(objdir ${lib}.objdir)
 			set(objlistcmake  ${objlistfile}.cmake)
+
 			# we only need to extract files once
 			if(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cmake.check_cache IS_NEWER_THAN ${objlistcmake})
 				#---------------------------------
@@ -144,17 +159,18 @@ function(merge_static_libs outlib)
 					DEPENDS ${lib})
 			endif()
 			list(APPEND extrafiles "${objlistfile}")
+
 			# relative path is needed by ar under MSYS
 			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
 			add_custom_command(TARGET ${outlib} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru $<TARGET_FILE:${outlib}> @${objlistfilerpath}"
-				COMMAND ${CMAKE_AR} ru "$<TARGET_FILE:${outlib}>" @"${objlistfilerpath}"
+				COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
+				COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
 				WORKING_DIRECTORY ${objdir})
 		endforeach()
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_RANLIB} $<TARGET_FILE:${outlib}>"
-			COMMAND ${CMAKE_RANLIB} $<TARGET_FILE:${outlib}>)
+			COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_RANLIB} ${outfile}"
+			COMMAND ${CMAKE_RANLIB} ${outfile})
 	endif()
 	file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
 	add_custom_command(
@@ -164,6 +180,14 @@ function(merge_static_libs outlib)
 
  endfunction()
 
+function(merge_lib name output)
+
+	get_target_property(target_prefix "${name}" PREFIX)
+	get_target_property(target_suffix "${name}" SUFFIX)
+	list(APPEND MERGE_LIBS
+		"${CMAKE_CURRENT_BINARY_DIR}/${target_prefix}${output}${target_suffix}")
+
+endfunction(merge_lib)
 
 function(create_test target)
 
@@ -188,7 +212,7 @@ function(create_shared_library name output_name src doinstall)
 
 endfunction(create_shared_library)
 
-function(create_static_library name output_name src doinstall)
+function(create_static_library name output_name src doinstall domerge)
 
 	add_library("${name}" STATIC "${src}")
 	target_link_libraries("${name}" "${ARGN}")
@@ -200,6 +224,10 @@ function(create_static_library name output_name src doinstall)
 	if(doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
 	endif(doinstall)
+
+	if(domerge)
+		merge_lib("${name}" "${output_name}")
+	endif(domerge)
 
 endfunction(create_static_library)
 
@@ -217,13 +245,17 @@ function(create_pic_library name output_name src doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
 	endif(doinstall)
 
+	if(domerge)
+		merge_lib("${name}" "${output_name}")
+	endif(domerge)
+
 endfunction(create_pic_library)
 
 function(create_all_libraries shared_name static_name pic_name output_name src doinstall)
 
 	create_shared_library("${shared_name}" "${output_name}" "${src}" "${doinstall}" "${ARGN}")
-	create_static_library("${static_name}" "${output_name}" "${src}" "${doinstall}" "${ARGN}")
-	create_pic_library("${pic_name}" "${output_name}_pic" "${src}" "${doinstall}" "${ARGN}")
+	create_static_library("${static_name}" "${output_name}" "${src}" "${doinstall}" NO "${ARGN}")
+	create_pic_library("${pic_name}" "${output_name}_pic" "${src}" "${doinstall}" NO "${ARGN}")
 
 endfunction(create_all_libraries)
 
