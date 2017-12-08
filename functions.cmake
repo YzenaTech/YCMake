@@ -63,7 +63,7 @@ endfunction(static_lib_path)
 function(merge_lib name output)
 
 	# Set the target name.
-	list(APPEND STATIC_LIBS_NAMES "${output}")
+	list(APPEND STATIC_LIBS_NAMES "${name}")
 	set(STATIC_LIBS_NAMES "${STATIC_LIBS_NAMES}" CACHE INTERNAL "List of library target names")
 	message(STATUS "Names: ${STATIC_LIBS_NAMES}")
 
@@ -159,12 +159,19 @@ function(merge_static_libs outlib)
 		endif()
 
 		# Loop over the files.
-		foreach(lib ${STATIC_LIBS_LIST})
+		list(LENGTH STATIC_LIBS_LIST len1)
+		math(EXPR len2 "${len1} - 1")
+		foreach(val RANGE ${len2})
+
+			list(GET STATIC_LIBS_LIST ${val} lib)
+			list(GET STATIC_LIBS_NAMES ${val} name)
 
 			# objlistfile will contain the list of object files for the library.
-			set(objlistfile ${lib}.objlist)
-			set(objdir ${lib}.objdir)
-			set(objlistcmake  ${objlistfile}.cmake)
+			set(objlistfile "${lib}.objlist")
+			set(objlistfile2 "${objlistfile}2")
+			set(objdir "${lib}.objdir")
+			set(objlistcmake  "${objlistfile}.cmake")
+			set(objtarget "${name}_target")
 
 			# We only need to extract files once.
 			if(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cmake.check_cache IS_NEWER_THAN ${objlistcmake})
@@ -174,41 +181,37 @@ function(merge_static_libs outlib)
 					"# Extract object files from the library
 					message(STATUS \"Extracting object files from ${lib}\")
 					execute_process(COMMAND ${CMAKE_AR} -x ${lib}
-						WORKING_DIRECTORY ${objdir})
+						WORKING_DIRECTORY "${objdir})
 					# save the list of object files
-					execute_process(COMMAND ls .
+					execute_process(COMMAND find ${objdir} -type f
 						OUTPUT_FILE ${objlistfile}
 						WORKING_DIRECTORY ${objdir})")
 
-				FILE(WRITE ${objlistcmake} "${file_content}")
+				FILE(WRITE "${objlistcmake}" "${file_content}")
 				#---------------------------------
 
-				file(MAKE_DIRECTORY ${objdir})
-
-				add_custom_command(
-					OUTPUT ${objlistfile}
-					COMMAND ${CMAKE_COMMAND} -P ${objlistcmake}
-					DEPENDS ${lib})
+				file(MAKE_DIRECTORY "${objdir}")
 
 			endif()
 
-			list(APPEND extrafiles "${objlistfile}")
+			add_custom_command(
+				OUTPUT "${objlistfile}"
+				COMMAND ${CMAKE_COMMAND} -P ${objlistcmake}
+				DEPENDS "${name}")
 
-			# Relative path is needed by ar under MSYS.
-			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
+			add_custom_target("${objtarget}"
+				COMMAND ${CMAKE_COMMAND} -E copy ${objlistfile} ${objlistfile2}
+				DEPENDS "${objlistfile}"
+				BYPRODUCTS "${objlistfile2}")
 
-			message(STATUS "Absolute: ${objlistfile}")
-			message(STATUS "Relative: ${objlistfilerpath}")
-
-			add_custom_command(TARGET ${outlib}
-				POST_BUILD
-				COMMAND ${CMAKE_AR} r "${outfile}" "${objlistfilerpath}"
-				WORKING_DIRECTORY ${objdir})
+			list(APPEND extrafiles "${objlistfile2}")
+			add_dependencies("${outlib}" "${objtarget}" "${name}")
 
 		endforeach()
 
-		add_custom_command(TARGET ${outlib}
+		add_custom_command(TARGET "${outlib}"
 			POST_BUILD
+			COMMAND ${CMAKE_AR} r ${outfile} `cat ${extrafiles}`
 			COMMAND ${CMAKE_RANLIB} "${outfile}")
 
 	endif()
