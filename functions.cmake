@@ -40,7 +40,7 @@
 
 # Make sure we save this.
 set(SCRIPT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "Directory of the merge script")
-set(MERGE_LIBS "" CACHE STRING "List of libraries to merge")
+set(MERGE_LIBS "${MERGE_LIBS}" CACHE INTERNAL STRING "List of libraries to merge")
 
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
@@ -58,6 +58,14 @@ function(static_lib_path var lib_output_name)
 	set("${var}" "${LIB_PATH}" PARENT_SCOPE)
 
 endfunction(static_lib_path)
+
+function(merge_lib name output)
+
+	static_lib_path(LIB_PATH "${output}")
+	list(APPEND MERGE_LIBS "${LIB_PATH}")
+	message(STATUS "List: ${MERGE_LIBS}")
+
+endfunction(merge_lib)
 
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
@@ -99,9 +107,6 @@ function(merge_static_libs outlib)
 		endforeach()
 
 	endif()
-
-	# Rename.
-	set(libfiles "${MERGE_LIBS}")
 
 	# Just to be sure: cleanup from duplicates
 	list(REMOVE_DUPLICATES MERGE_LIBS)
@@ -200,13 +205,6 @@ function(merge_static_libs outlib)
 	endif()
 
 endfunction()
-
-function(merge_lib name output)
-
-	static_lib_path(LIB_PATH "${output}")
-	list(APPEND MERGE_LIBS "${LIB_PATH}")
-
-endfunction(merge_lib)
 
 function(create_test target)
 
