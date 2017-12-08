@@ -151,8 +151,9 @@ function(merge_static_libs outlib)
 			set(objdir ${lib}.objdir)
 			set(objlistcmake  ${objlistfile}.cmake)
 
-			# we only need to extract files once
+			# We only need to extract files once.
 			if(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cmake.check_cache IS_NEWER_THAN ${objlistcmake})
+
 				#---------------------------------
 				string(CONCAT file_content
 					"# Extract object files from the library
@@ -163,27 +164,39 @@ function(merge_static_libs outlib)
 					execute_process(COMMAND ls .
 						OUTPUT_FILE ${objlistfile}
 						WORKING_DIRECTORY ${objdir})")
+
 				FILE(WRITE ${objlistcmake} "${file_content}")
 				#---------------------------------
+
 				file(MAKE_DIRECTORY ${objdir})
+
 				add_custom_command(
 					OUTPUT ${objlistfile}
 					COMMAND ${CMAKE_COMMAND} -P ${objlistcmake}
 					DEPENDS ${lib})
+
 			endif()
+
 			list(APPEND extrafiles "${objlistfile}")
 
-			# relative path is needed by ar under MSYS
+			# Relative path is needed by ar under MSYS.
 			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
-			add_custom_command(TARGET ${outlib} POST_BUILD
+
+			add_custom_command(TARGET ${outlib}
+				POST_BUILD
 				COMMAND ${CMAKE_AR} r "${outfile}" @"${objlistfilerpath}"
 				WORKING_DIRECTORY ${objdir})
+
 		endforeach()
+
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
 			COMMAND ${CMAKE_RANLIB} ${outfile})
+
 	endif()
+
 	file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
+
 	add_custom_command(
 		OUTPUT  ${dummyfile}
 		COMMAND ${CMAKE_COMMAND}  -E copy ${dummyfile}.base ${dummyfile}
