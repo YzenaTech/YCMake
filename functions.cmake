@@ -123,7 +123,8 @@ function(merge_static_libs outlib)
 			COMMAND /usr/bin/libtool -static -o ${outfile} ${libfiles})
 
 	else()
-		# general UNIX - need to "ar -x" and then "ar -ru"
+
+		# General UNIX - need to "ar -x" and then "ar -ru"
 
 		# We can't handle multiconfigs.
 		if(multiconfig)
@@ -163,13 +164,11 @@ function(merge_static_libs outlib)
 			# relative path is needed by ar under MSYS
 			file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
 			add_custom_command(TARGET ${outlib} POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E echo Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}
 				COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
 				WORKING_DIRECTORY ${objdir})
 		endforeach()
 		add_custom_command(TARGET ${outlib}
 			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E echo Running: ${CMAKE_RANLIB} ${outfile}
 			COMMAND ${CMAKE_RANLIB} ${outfile})
 	endif()
 	file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
