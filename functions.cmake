@@ -245,9 +245,9 @@ function(create_static_library name output_name src doinstall domerge)
 		PROPERTIES
 		OUTPUT_NAME "${output_name}")
 
-	if(doinstall)
+	if(doinstall AND NOT domerge)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
-	endif(doinstall)
+	endif(doinstall AND NOT domerge)
 
 	if(domerge)
 		merge_lib("${name}" "${output_name}")
@@ -265,9 +265,9 @@ function(create_pic_library name output_name src doinstall domerge)
 		OUTPUT_NAME "${output_name}"
 		POSITION_INDEPENDENT_CODE ON)
 
-	if(doinstall)
+	if(doinstall AND NOT domerge)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
-	endif(doinstall)
+	endif(doinstall AND NOT domerge)
 
 	if(domerge)
 		merge_lib("${name}" "${output_name}")
