@@ -60,6 +60,7 @@ function(static_lib_path var lib_output_name)
 
 endfunction(static_lib_path)
 
+# Adds a library to the list to merge.
 function(merge_lib name output)
 
 	# Set the target name.
@@ -77,6 +78,7 @@ endfunction(merge_lib)
 # libs into a single static library
 function(merge_libs outlib)
 
+	# Get the names of all libraries.
 	set(libs ${ARGV})
 	list(REMOVE_AT libs 0)
 
@@ -84,6 +86,7 @@ function(merge_libs outlib)
 	set(dummyfile ${CMAKE_CURRENT_BINARY_DIR}/${outlib}_dummy.c)
 	file(WRITE ${dummyfile} "// ${dummyfile}")
 
+	# Add the output library.
 	add_library(${outlib} STATIC ${dummyfile})
 	static_lib_path(outfile "${outlib}")
 
@@ -139,7 +142,10 @@ function(merge_libs outlib)
 			message(FATAL_ERROR "Multiple configurations are not supported")
 		endif()
 
+		# Get the location of the library.
 		get_target_property(outfile ${outlib} LOCATION)
+
+		# Add the libtool command to merge.
 		add_custom_command(TARGET ${outlib} POST_BUILD
 			COMMAND rm ${outfile}
 			COMMAND /usr/bin/libtool -static -o ${outfile} ${STATIC_LIBS_LIST})
@@ -158,6 +164,7 @@ function(merge_libs outlib)
 		math(EXPR len2 "${len1} - 1")
 		foreach(val RANGE ${len2})
 
+			# Get the library and its name from the lists.
 			list(GET STATIC_LIBS_LIST ${val} lib)
 			list(GET STATIC_LIBS_NAMES ${val} name)
 
@@ -172,6 +179,7 @@ function(merge_libs outlib)
 			if(${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cmake.check_cache IS_NEWER_THAN ${objlistcmake})
 
 				#---------------------------------
+				# Create a file to run in CMake later.
 				string(CONCAT file_content
 					"# Extract object files from the library
 					message(STATUS \"Extracting object files from ${lib}\")
@@ -185,25 +193,32 @@ function(merge_libs outlib)
 				FILE(WRITE "${objlistcmake}" "${file_content}")
 				#---------------------------------
 
+				# Make sure the obj directory exists.
 				file(MAKE_DIRECTORY "${objdir}")
 
 			endif()
 
+			# Add the created file above as a command to run.
 			add_custom_command(
 				OUTPUT "${objlistfile}"
 				COMMAND ${CMAKE_COMMAND} -P ${objlistcmake}
 				DEPENDS "${name}")
 
+			# Copy the list. This is necessary to avoid some errors.
 			add_custom_target("${objtarget}"
 				COMMAND ${CMAKE_COMMAND} -E copy ${objlistfile} ${objlistfile2}
 				DEPENDS "${objlistfile}"
 				BYPRODUCTS "${objlistfile2}")
 
+			# Add the files in the list of object files to the list of files.
 			list(APPEND extrafiles "${objlistfile2}")
+
+			# Add a dependency from the output lib to the one we're processing.
 			add_dependencies("${outlib}" "${objtarget}" "${name}")
 
 		endforeach()
 
+		# Run the merge.
 		add_custom_command(TARGET "${outlib}"
 			POST_BUILD
 			COMMAND ${CMAKE_AR} r ${outfile} `cat ${extrafiles}`
@@ -218,6 +233,7 @@ endfunction(merge_libs)
 
 function(create_test target)
 
+	# Create an executable, link libs to it, and add it as a test.
 	add_executable("${target}" "${target}.c")
 	target_link_libraries("${target}" "${ARGN}")
 	add_test(NAME ${target} COMMAND "$<TARGET_FILE:${target}>")
@@ -226,13 +242,16 @@ endfunction(create_test)
 
 function(create_shared_library name output_name src doinstall)
 
+	# Add the library and link its dependencies.
 	add_library("${name}" SHARED "${src}")
 	target_link_libraries("${name}" "${ARGN}")
 
+	# Set its output name.
 	set_target_properties("${name}"
 		PROPERTIES
 		OUTPUT_NAME "${output_name}")
 
+	# Install it, if necessary.
 	if(doinstall)
 		install(TARGETS "${name}" LIBRARY DESTINATION lib/)
 	endif(doinstall)
@@ -241,13 +260,16 @@ endfunction(create_shared_library)
 
 function(create_static_library name output_name src doinstall)
 
+	# Add the library and link its dependencies.
 	add_library("${name}" STATIC "${src}")
 	target_link_libraries("${name}" "${ARGN}")
 
+	# Set its output name.
 	set_target_properties("${name}"
 		PROPERTIES
 		OUTPUT_NAME "${output_name}")
 
+	# Install it, if necessary.
 	if(doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
 	endif(doinstall)
@@ -256,14 +278,17 @@ endfunction(create_static_library)
 
 function(create_pic_library name output_name src doinstall)
 
+	# Add the library and link its dependencies.
 	add_library("${name}" STATIC "${src}")
 	target_link_libraries("${name}" "${ARGN}")
 
+	# Set its output name.
 	set_target_properties("${name}"
 		PROPERTIES
 		OUTPUT_NAME "${output_name}"
 		POSITION_INDEPENDENT_CODE ON)
 
+	# Install it, if necessary.
 	if(doinstall)
 		install(TARGETS "${name}" ARCHIVE DESTINATION lib/)
 	endif(doinstall)
@@ -271,12 +296,18 @@ function(create_pic_library name output_name src doinstall)
 endfunction(create_pic_library)
 
 function(create_merge_library name src)
+
+	# Create a pic library.
 	create_pic_library("${name}" "${name}" "${src}" NO "${ARGN}")
+
+	# Put the lib in the list to merge.
 	merge_lib("${name}" "${name}")
+
 endfunction(create_merge_library)
 
 function(create_all_libraries shared_name static_name pic_name output_name src doinstall)
 
+	# Create libraries of all three types.
 	create_shared_library("${shared_name}" "${output_name}" "${src}" "${doinstall}" "${ARGN}")
 	create_static_library("${static_name}" "${output_name}" "${src}" "${doinstall}" "${ARGN}")
 	create_pic_library("${pic_name}" "${output_name}_pic" "${src}" "${doinstall}" "${ARGN}")
