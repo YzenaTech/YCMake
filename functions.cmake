@@ -211,6 +211,9 @@ function(merge_static_libs outlib)
 
 	endif()
 
+	# Install the resulting library.
+	install(TARGETS "${outlib}" ARCHIVE DESTINATION lib/)
+
 endfunction()
 
 function(create_test target)
