@@ -75,7 +75,7 @@ endfunction(merge_lib)
 
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
-function(merge_static_libs outlib)
+function(merge_libs outlib)
 
 	set(libs ${ARGV})
 	list(REMOVE_AT libs 0)
@@ -214,7 +214,7 @@ function(merge_static_libs outlib)
 	# Install the resulting library.
 	install(TARGETS "${outlib}" ARCHIVE DESTINATION lib/)
 
-endfunction()
+endfunction(merge_libs)
 
 function(create_test target)
 
