@@ -78,9 +78,8 @@ endfunction(merge_lib)
 # libs into a single static library
 function(merge_libs outlib)
 
-	# Get the names of all libraries.
-	set(libs ${ARGV})
-	list(REMOVE_AT libs 0)
+	# Get the names of all libraries to link.
+	set(link_libs ${ARGN})
 
 	# Create a dummy file that the target will depend on
 	set(dummyfile ${CMAKE_CURRENT_BINARY_DIR}/${outlib}_dummy.c)
@@ -225,6 +224,9 @@ function(merge_libs outlib)
 			COMMAND ${CMAKE_RANLIB} "${outfile}")
 
 	endif()
+
+	# Link the needed libraries.
+	target_link_libraries("${outlib}" "${link_libs}")
 
 	# Install the resulting library.
 	install(TARGETS "${outlib}" ARCHIVE DESTINATION lib/)
