@@ -22,7 +22,9 @@
 #	KIND, either express or implied. See the Apache License for the specific
 #	language governing permissions and limitations under the Apache License.
 #
-#	The function merge_static_libs is under the following copyright and license:
+#	The function merge_static_libs() is also under the following copyright and
+#	license:
+#
 #	Copyright (C) 2012 Modelon AB
 #
 #	This program is free software: you can redistribute it and/or modify
@@ -74,8 +76,8 @@ function(merge_lib name output)
 
 endfunction(merge_lib)
 
-# Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
-# libs into a single static library
+# Merge_static_libs(outlib) merges all libs in STATIC_LIB_NAMES into a single
+# static library named outlib.
 function(merge_libs outlib)
 
 	# Get the names of all libraries to link.
