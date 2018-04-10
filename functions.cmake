@@ -45,8 +45,24 @@ set(SCRIPT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "Directory of the me
 set(STATIC_LIBS_LIST "${STATIC_LIBS_LIST}" CACHE INTERNAL "List of libraries to merge")
 set(STATIC_LIBS_NAMES "${STATIC_LIBS_NAMES}" CACHE INTERNAL "List of library target names")
 
+set(FUNCTIONS_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "Directory of the functions.cmake file")
+
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
+
+function(gen_c_array infile outfile array_name target start_line)
+
+	set(script "${CMAKE_CURRENT_BINARY_DIR}/${target}_script.cmake")
+
+	configure_file("${FUNCTIONS_DIR}/gen_array.cmake.in" "${script}" @ONLY)
+
+	add_custom_command(OUTPUT "${outfile}" COMMAND ${CMAKE_COMMAND} -P ${script})
+	add_custom_target("${target}_script" DEPENDS "${outfile}")
+
+	add_library("${target}" "${outfile}")
+	add_dependencies("${target}" "${target}_script")
+
+endfunction(gen_c_array)
 
 function(static_lib_path var lib_output_name)
 

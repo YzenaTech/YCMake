@@ -1,0 +1,71 @@
+#	***** BEGIN LICENSE BLOCK *****
+#
+#	Copyright 2017 Yzena Tech
+#
+#	Licensed under the Apache License, Version 2.0 (the "Apache License")
+#	with the following modification; you may not use this file except in
+#	compliance with the Apache License and the following modification to it:
+#	Section 6. Trademarks. is deleted and replaced with:
+#
+#	6. Trademarks. This License does not grant permission to use the trade
+#		names, trademarks, service marks, or product names of the Licensor
+#		and its affiliates, except as required to comply with Section 4(c) of
+#		the License and to reproduce the content of the NOTICE file.
+#
+#	You may obtain a copy of the Apache License at
+#
+#		http://www.apache.org/licenses/LICENSE-2.0
+#
+#	Unless required by applicable law or agreed to in writing, software
+#	distributed under the Apache License with the above modification is
+#	distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+#	KIND, either express or implied. See the Apache License for the specific
+#	language governing permissions and limitations under the Apache License.
+#
+#	****** END LICENSE BLOCK ******
+
+# Generate a C source array from a file
+message(STATUS "Generating @outfile@ with array: \"const char @array_name@[]\"...")
+
+file(READ "@CMAKE_CURRENT_SOURCE_DIR@/@infile@" contents HEX)
+
+set(start_line @start_line@)
+
+math(EXPR start_line "${start_line} - 1")
+
+file(WRITE "@outfile@" "// @outfile@\n")
+file(APPEND "@outfile@" "// AUTOMATICALLY GENERATED: DO NOT MODIFY\n")
+
+string(REGEX MATCHALL ".." output "${contents}")
+
+string(LENGTH "${contents}" contents_length)
+
+set(lines 0)
+list(LENGTH output len)
+
+foreach(iter RANGE 1 ${len})
+
+	list(GET output "${iter}" line)
+
+	if("${line}" EQUAL "0a")
+
+		math(EXPR lines "${lines} + 1")
+
+		if("${lines}" EQUAL "${start_line}")
+
+			math(EXPR start "${iter} + 1")
+			break()
+
+		endif()
+
+	endif()
+
+endforeach()
+
+foreach(iter RANGE 1 ${start})
+	list(REMOVE_AT output 0)
+endforeach()
+
+string(REGEX REPLACE ";" ",\n0x" output "${output}")
+file(APPEND "@outfile@" "const char @array_name@[] = {0x${output},\n0x0};")
+
