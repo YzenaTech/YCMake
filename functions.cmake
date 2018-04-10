@@ -56,7 +56,7 @@ function(gen_c_array infile outfile array_name target start_line)
 
 	configure_file("${FUNCTIONS_DIR}/gen_array.cmake.in" "${script}" @ONLY)
 
-	add_custom_command(OUTPUT "${outfile}" COMMAND ${CMAKE_COMMAND} -P ${script})
+	add_custom_command(OUTPUT "${outfile}" COMMAND "${CMAKE_COMMAND}" -P "${script}")
 	add_custom_target("${target}_script" DEPENDS "${outfile}")
 
 	add_library("${target}" "${outfile}")
