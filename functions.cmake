@@ -50,6 +50,16 @@ set(FUNCTIONS_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "Directory of the f
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
 
+# Generates a C file with a char array that contains the contents of a file,
+# which can then be used as a string in C source. This is useful, for example,
+# to turn OpenGL shaders, which should be in their own files, into C strings
+# contained with source files that can then be compiled and inserted into an
+# executable.
+# Params: infile is the input file (the file that will be a turned into a char
+# array; outfile is the output file (the file with the C array); array_name is
+# the name of the array; target is the CMake target that other targets can then
+# depend on; and start_line is the line in infile that will be the first line
+# in the array, which is useful for excluding header comments.
 function(gen_c_array infile outfile array_name target start_line)
 
 	set(script "${CMAKE_CURRENT_BINARY_DIR}/${target}_script.cmake")
