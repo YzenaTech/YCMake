@@ -269,9 +269,14 @@ function(create_test_target target)
 
 endfunction(create_test_target)
 
-function(create_test target test_num)
+function(create_test_from_target target test_num)
 	add_test(NAME "${target}${test_num}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
-endfunction(create_test)
+endfunction(create_test_from_target)
+
+function(create_test target)
+	create_test_target("${target}" "${ARGN}")
+	add_test(NAME "${target}" COMMAND "$<TARGET_FILE:${target}>")
+endfunction()
 
 function(create_shared_library name output_name src doinstall)
 
