@@ -60,7 +60,7 @@ cmake_policy(SET CMP0026 NEW)
 # the name of the array; target is the CMake target that other targets can then
 # depend on; and start_line is the line in infile that will be the first line
 # in the array, which is useful for excluding header comments.
-function(file_to_data infile outfile array_name target start_line ctsr)
+function(file_to_data infile outfile array_name target start_line cstr)
 
 	set(script "${CMAKE_CURRENT_BINARY_DIR}/${target}_script.cmake")
 
