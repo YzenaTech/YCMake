@@ -261,13 +261,16 @@ function(merge_libs outlib)
 
 endfunction(merge_libs)
 
-function(create_test target)
+function(create_test_target target)
 
 	# Create an executable, link libs to it, and add it as a test.
 	add_executable("${target}" "${target}.c")
 	target_link_libraries("${target}" "${ARGN}")
-	add_test(NAME ${target} COMMAND "$<TARGET_FILE:${target}>")
 
+endfunction(create_test_target)
+
+function(create_test target)
+	add_test(NAME ${target} COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
 endfunction(create_test)
 
 function(create_shared_library name output_name src doinstall)
