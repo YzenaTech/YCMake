@@ -269,8 +269,8 @@ function(create_test_target target)
 
 endfunction(create_test_target)
 
-function(create_test target)
-	add_test(NAME ${target} COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
+function(create_test target test_num)
+	add_test(NAME "${target}${test_num}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
 endfunction(create_test)
 
 function(create_shared_library name output_name src doinstall)
