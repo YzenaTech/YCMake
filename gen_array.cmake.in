@@ -67,5 +67,11 @@ foreach(iter RANGE 1 ${start})
 endforeach()
 
 string(REGEX REPLACE ";" ",\n0x" output "${output}")
-file(APPEND "@outfile@" "const char @array_name@[] = {0x${output},\n0x0};")
+file(APPEND "@outfile@" "const char @array_name@[] = {0x${output}")
+
+if (@cstr@)
+	file(APPEND "@outfile@" ",\n0x0")
+endif()
+
+file(APPEND "@outfile@" "};")
 
