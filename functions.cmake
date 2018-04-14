@@ -264,6 +264,10 @@ function(merge_libs outlib)
 	# Install the resulting library.
 	install(TARGETS "${outlib}" ARCHIVE DESTINATION lib/)
 
+	# Make sure to erase the lists.
+	set(STATIC_LIBS_NAMES "" CACHE INTERNAL "List of library target names")
+	set(STATIC_LIBS_LIST "" CACHE INTERNAL "List of libraries to merge")
+
 endfunction(merge_libs)
 
 function(create_test_target target)
