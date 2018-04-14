@@ -74,6 +74,11 @@ function(create_data_target infile outfile array_name target start_line cstr)
 
 endfunction(create_data_target)
 
+# Creates a symlink named "link" that points to "target".
+function(create_symlink link target)
+	add_custom_target("${link}" ALL COMMAND "${CMAKE_COMMAND}" -E create_symlink "${target}" "${link}")
+endfunction(create_symlink)
+
 function(static_lib_path var lib_output_name)
 
 	# Build the path.
