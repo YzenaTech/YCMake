@@ -76,7 +76,10 @@ endfunction(create_data_target)
 
 # Creates a symlink named "link" that points to "target".
 function(create_symlink link target)
-	add_custom_target("${link}" ALL COMMAND "${CMAKE_COMMAND}" -E create_symlink "${target}" "${link}")
+	add_custom_command(
+		TARGET "${target}" POST_BUILD
+		COMMAND "${CMAKE_COMMAND}" -E create_symlink "$<TARGET_FILE:${target}>" "${link}"
+	)
 endfunction(create_symlink)
 
 function(static_lib_path var lib_output_name)
