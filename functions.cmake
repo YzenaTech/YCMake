@@ -84,6 +84,13 @@ function(create_symlink link target)
 
 endfunction(create_symlink)
 
+function(file_size var filename)
+	file(READ "${filename}" content HEX)
+	string(LENGTH "${content}" content_length)
+	math(EXPR content_length "${content_length} / 2")
+	set(${var} ${content_length} PARENT_SCOPE)
+endfunction()
+
 function(static_lib_path var lib_output_name)
 
 	# Build the path.
