@@ -50,6 +50,13 @@ set(FUNCTIONS_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "Directory of the f
 # For some reason, we get stupid CMake warnings.
 cmake_policy(SET CMP0026 NEW)
 
+function(file_size var filename)
+	file(READ "${filename}" content HEX)
+	string(LENGTH "${content}" content_length)
+	math(EXPR content_length "${content_length} / 2")
+	set(${var} ${content_length} PARENT_SCOPE)
+endfunction()
+
 # Generates a C file with a char array that contains the contents of a file,
 # which can then be used as a string in C source. This is useful, for example,
 # to turn OpenGL shaders, which should be in their own files, into C strings
@@ -60,7 +67,9 @@ cmake_policy(SET CMP0026 NEW)
 # the name of the array; target is the CMake target that other targets can then
 # depend on; and start_line is the line in infile that will be the first line
 # in the array, which is useful for excluding header comments.
-function(create_data_target infile outfile array_name target start_line cstr)
+function(create_data_target infile outfile array_name len_name target start_line cstr)
+
+	file_size(file_len "${infile}")
 
 	set(script "${CMAKE_CURRENT_BINARY_DIR}/${target}_script.cmake")
 
@@ -83,13 +92,6 @@ function(create_symlink link target)
 	)
 
 endfunction(create_symlink)
-
-function(file_size var filename)
-	file(READ "${filename}" content HEX)
-	string(LENGTH "${content}" content_length)
-	math(EXPR content_length "${content_length} / 2")
-	set(${var} ${content_length} PARENT_SCOPE)
-endfunction()
 
 function(static_lib_path var lib_output_name)
 

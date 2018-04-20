@@ -67,6 +67,7 @@ foreach(iter RANGE 1 ${start})
 endforeach()
 
 string(REGEX REPLACE ";" ",\n0x" output "${output}")
+file(APPEND "@outfile@" "const size_t @len_name@ = @file_len@;\n")
 file(APPEND "@outfile@" "const char @array_name@[] = {0x${output}")
 
 if (@cstr@)
