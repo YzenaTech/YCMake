@@ -145,7 +145,7 @@ function(merge_libs outlib)
 	endforeach()
 
 	# If we are on a multiconfig build system...
-	if(NOT"${CMAKE_CFG_INTDIR}" STREQUAL ".")
+	if(NOT "${CMAKE_CFG_INTDIR}" STREQUAL ".")
 
 		# Generate a list for each config type.
 		foreach(lib ${STATIC_LIBS_LIST})
@@ -284,10 +284,10 @@ function(merge_libs outlib)
 
 endfunction(merge_libs)
 
-function(create_test_target target)
+function(create_test_target target ext)
 
 	# Create an executable, link libs to it, and add it as a test.
-	add_executable("${target}" "${target}.c")
+	add_executable("${target}" "${target}.${ext}")
 	target_link_libraries("${target}" "${ARGN}")
 
 endfunction(create_test_target)
@@ -297,7 +297,12 @@ function(create_test_from_target target test_num)
 endfunction(create_test_from_target)
 
 function(create_test target)
-	create_test_target("${target}" "${ARGN}")
+	create_test_target("${target}" "c" "${ARGN}")
+	add_test(NAME "${target}" COMMAND "$<TARGET_FILE:${target}>")
+endfunction()
+
+function(create_test_cpp target)
+	create_test_target("${target}" "cpp" "${ARGN}")
 	add_test(NAME "${target}" COMMAND "$<TARGET_FILE:${target}>")
 endfunction()
 
